@@ -1,0 +1,83 @@
+##Shell
+#extract gene name from bed file
+for i in $(cat ../BED_files_178_genomes/sp.list); do cat ../BED_files_178_genomes/$i.bed|awk '{print $2":"$2}'|cut -c 4- > ../BED_files_178_genomes/change/$i.change; done
+
+
+##Shell
+##get gene structure info 
+#!/bin/bash -x
+for i in $(cat ../BED_files_178_genomes/sp.list)  ##for each species
+do
+for j in $(cat ../BED_files_178_genomes/change/$i.change)   ##for each row in each species change file
+
+do
+VAR1=$(echo $j|cut -d ":" -f1)
+VAR2=$(echo $j|cut -d ":" -f2)
+grep $VAR1 ../GFF_files_modify_178_genomes/$i.gff| awk -v pattern=$VAR1 '{print pattern"\t"$3"\t"$4"\t"$5"\t"$8"\t"$7"\t"$1}' >> $i.str
+
+done
+echo "$i prepration finished" 
+done
+exit 0
+
+
+##Perl
+##get relative gene structure info 
+#! /usr/bin/perl -w
+use strict;
+use List::Util qw(min); 
+
+my @sample=qw/GC GP GR BO HG HP DP AT DR GD DT LG DL CQ MS EU FO GN LI IN LQ II IP IS BD PX PU PT NA PW IB AQ EE HZ GA AH ND LH GQ MB LN IV IG IL FT HD
+ HN HH MC BA BT BR BH BG PG DC GZ AF IR GE BU LS PA QB PM DO AE PZ PL PY DU PO PN CM FU AC FB CI CP CA PP LL GI CE FH HU BZ MA LO LU GU H
+C GV HB HA FN FM MV ED AP CO CV EC CL FF ME ER EV EO MG CT BS FP AB LT LM AD EG MF LF BL BM BQ DN CS DM AO BC CR BN FL LA GB FV DB DQ CB 
+DH DA DE FZ LC GH FC FI LZ PS IA IU IC MZ GM HS MI NF EM LB LD HV GG HT IM IO FQ AN AI AV CC GT ML AR IZ CH FA ES MR MU MT/;
+
+
+my $direc = "/raid8/yangl/synteny_data/gene_structure_178_genomes/";
+
+foreach my $sample(@sample){   
+  my $direc = "/raid8/yangl/synteny_data/gene_structure_178_genomes/";
+  my $file1 = $sample.".str";
+  my $infile1 = $direc.$file1;
+
+  my $file2 = $sample.".str.final";
+  my $outfile1 = $direc.$file2;  ##relative gene structure£¬starting from 0
+  
+  my %hash;
+  open OUT1,">$outfile1";  ##outfile of relative gene structure
+
+open IN1, "<$infile1" or die "Can not open the file\n";
+   while (<IN1>) {
+     chomp;
+     my ($gene,$pos) = split (/\t/,$_,2);
+     my @array = ();
+     if (exists $hash{$gene}) {
+      @array = @{$hash{$gene}};
+      push (@array,$pos);
+      $hash{$gene} = \@array;
+    }else {
+      @array = ();
+      push (@array,$pos);
+      $hash{$gene} = \@array;
+    }
+  }
+  close IN1;
+
+foreach my $key (sort keys %hash) {   ##each gene
+    my @CDS_UTR = @{$hash{$key}};
+    my @array;
+    foreach my $cds_utr (@CDS_UTR) {
+      my @tmp = split (/\t/,$cds_utr);
+      push (@array,$tmp[1]);  ##info of start pos of each CDS/UTR
+    }
+    my $min = &min(@array);   ##min value of start pos of all CDS/UTR for one gene
+    foreach my $cds_utr (@CDS_UTR) {
+      my @tmp2 = split (/\t/,$cds_utr);
+      $tmp2[1] = $tmp2[1] - $min;  ##former start - min value
+      $tmp2[2] = $tmp2[2] - $min;  ##former end - min value
+      print OUT1 "$sample"."_"."$key\t$tmp2[0]\t$tmp2[1]\t$tmp2[2]\t$tmp2[3]\t$tmp2[4]\t$tmp2[5]\n";
+      }
+  }
+  print "$sample is done\n";
+  
+  }

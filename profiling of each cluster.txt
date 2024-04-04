@@ -1,0 +1,21 @@
+##R
+setwd("C:\\工作\\yangli_2023\\CHS gene family\\03.cluster")
+R
+require(igraph)
+data <-read.table("178.CHS_hmmerlogs.SynNet",sep='\t',header=F)
+network <- graph.data.frame(data,directed=F)
+net_simple <- simplify(network)
+clusters3 <- cluster_infomap(net_simple)
+out3 <- as.data.frame(list(names=clusters3$names, mem=clusters3$membership))
+write.table(out3,"178.CHS_hmmerlogs.SynNet.infoclusters",quote=F,sep='\t',row.names=F)
+
+
+setwd("C:\\工作\\yangli_2023\\CHS gene family\\03.cluster")
+R
+require(igraph)
+data <-read.table("178.CHS-like_hmmerlogs.SynNet",sep='\t',header=F)
+network <- graph.data.frame(data,directed=F)
+net_simple <- simplify(network)
+clusters3 <- cluster_infomap(net_simple)
+out3 <- as.data.frame(list(names=clusters3$names, mem=clusters3$membership))
+write.table(out3,"178.CHS-like_hmmerlogs.SynNet.infoclusters",quote=F,sep='\t',row.names=F)

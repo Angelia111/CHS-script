@@ -1,0 +1,14 @@
+##Linux
+##extract edges with two CHS genes
+cat 178.CHS.SynNet | cut -f1 > tmp
+cat 178.CHS.SynNet | cut -f2 | cat tmp - > tmp2
+grep -v -f CHS.id.txt tmp2 | sort | uniq > tmp3
+grep -v -f tmp3 178.CHS.SynNet > 178.CHS_hmmerlogs.SynNet
+rm tmp*
+
+##extract edges with two CHS-like genes
+cat 178.CHS-like.SynNet | cut -f1 > tmp
+cat 178.CHS-like.SynNet | cut -f2 | cat tmp - > tmp2
+grep -v -f CHS-like.id.txt tmp2 | sort | uniq > tmp3
+grep -v -f tmp3 178.CHS-like.SynNet > 178.CHS-like_hmmerlogs.SynNet
+rm tmp*
